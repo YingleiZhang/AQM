@@ -61,7 +61,12 @@ static int red_enqueue(struct sk_buff *skb, struct Qdisc *sch)
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct Qdisc *child = q->qdisc;
 	int ret;
-
+	// Read dscp bits from a IP packet.
+	q->parms.dscp = ipv4_get_dsfield(ip_hdr(skb)) >> 2;
+	if(q->parms.dscp == 0x32)	q->vars.dscp_factor = 0.5;
+	if(q->parms.dscp == 0x46)	q->vars.dscp_factor = 0.7;
+	if(q->parms.dscp == 0x00)	q->vars.dscp_factor = 0.9;
+	
 	q->vars.qavg = red_calc_qavg(&q->parms,
 				     &q->vars,
 				     child->qstats.backlog);

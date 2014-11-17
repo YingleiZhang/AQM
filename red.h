@@ -134,6 +134,7 @@ struct red_parms {
 	u32		qth_delta;	/* max_th - min_th */
 	u32		target_min;	/* min_th + 0.4*(max_th - min_th) */
 	u32		target_max;	/* min_th + 0.6*(max_th - min_th) */
+	u32		dscp;		/* use dscp to indicate priority class0, class1, and class2 */
 	u8		Scell_log;
 	u8		Wlog;		/* log(W)		*/
 	u8		Plog;		/* random number bits	*/
@@ -145,7 +146,10 @@ struct red_vars {
 	int		qcount;		/* Number of packets since last random
 					   number generation */
 	u32		qR;		/* Cached random number */
-
+	u32		dscp_factor;  /*0.5 for class0 best performance 
+							0.7 for class1 middle in the road.
+							0.9 for best effort, slightly better than default value, which is 1.
+							*/
 	unsigned long	qavg;		/* Average queue length: Wlog scaled */
 	ktime_t		qidlestart;	/* Start of current idle period */
 };
@@ -162,8 +166,10 @@ static inline void red_set_vars(struct red_vars *v)
 	 * it might result in an unreasonable qavg for a while. --TGR
 	 */
 	v->qavg		= 0;
-
+	
 	v->qcount	= -1;
+	
+	v->dscp_factor = 1.0; //set the default value of dscp_factor to 1.0;
 }
 
 static inline void red_set_parms(struct red_parms *p,
@@ -326,7 +332,7 @@ static inline int red_mark_probability(const struct red_parms *p,
 
 	   Any questions? --ANK (980924)
 	 */
-	return !(((qavg - p->qth_min) >> p->Wlog) * v->qcount < v->qR);
+	return !(((qavg - p->qth_min) >> p->Wlog)*v->dscp_factor* v->qcount < v->qR);
 }
 
 enum {

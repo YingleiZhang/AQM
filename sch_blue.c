@@ -61,52 +61,7 @@ static int blue_enqueue(struct sk_buff *skb, struct Qdisc *sch)
 	struct blue_sched_data *q = qdisc_priv(sch);
 	struct Qdisc *child = q->qdisc;
 	int ret;
-
-	q->vars.qavg = blue_calc_qavg(&q->parms,
-				     &q->vars,
-				     child->qstats.backlog);
-
-	if (blue_is_idling(&q->vars))
-		blue_end_of_idle_period(&q->vars);
-
-	switch (blue_action(&q->parms, &q->vars, q->vars.qavg)) {
-	case BLUE_DONT_MARK:
-		break;
-
-	case BLUE_PROB_MARK:
-		sch->qstats.overlimits++;
-		if (!blue_use_ecn(q) || !INET_ECN_set_ce(skb)) {
-			q->stats.prob_drop++;
-			goto congestion_drop;
-		}
-
-		q->stats.prob_mark++;
-		break;
-
-	case BLUE_HARD_MARK:
-		sch->qstats.overlimits++;
-		if (blue_use_harddrop(q) || !blue_use_ecn(q) ||
-		    !INET_ECN_set_ce(skb)) {
-			q->stats.forced_drop++;
-			goto congestion_drop;
-		}
-
-		q->stats.forced_mark++;
-		break;
-	}
-
-	ret = qdisc_enqueue(skb, child);
-	if (likely(ret == NET_XMIT_SUCCESS)) {
-		sch->q.qlen++;
-	} else if (net_xmit_drop_count(ret)) {
-		q->stats.pdrop++;
-		sch->qstats.drops++;
-	}
-	return ret;
-
-congestion_drop:
-	qdisc_drop(skb, sch);
-	return NET_XMIT_CN;
+	//need to implement blue enqueue
 }
 
 static struct sk_buff *blue_dequeue(struct Qdisc *sch)
@@ -114,18 +69,10 @@ static struct sk_buff *blue_dequeue(struct Qdisc *sch)
 	struct sk_buff *skb;
 	struct blue_sched_data *q = qdisc_priv(sch);
 	struct Qdisc *child = q->qdisc;
-
-	skb = child->dequeue(child);
-	if (skb) {
-		qdisc_bstats_update(sch, skb);
-		sch->q.qlen--;
-	} else {
-		if (!blue_is_idling(&q->vars))
-			blue_start_of_idle_period(&q->vars);
-	}
-	return skb;
+	//need to implement blue dequeue
 }
 
+//this should be the same function as red, so no need to change.
 static struct sk_buff *blue_peek(struct Qdisc *sch)
 {
 	struct blue_sched_data *q = qdisc_priv(sch);
@@ -140,19 +87,10 @@ static unsigned int blue_drop(struct Qdisc *sch)
 	struct Qdisc *child = q->qdisc;
 	unsigned int len;
 
-	if (child->ops->drop && (len = child->ops->drop(child)) > 0) {
-		q->stats.other++;
-		sch->qstats.drops++;
-		sch->q.qlen--;
-		return len;
-	}
-
-	if (!blue_is_idling(&q->vars))
-		blue_start_of_idle_period(&q->vars);
-
-	return 0;
+	//the drop mechanism is different, need to implement drop function.
 }
 
+//No need to change
 static void blue_reset(struct Qdisc *sch)
 {
 	struct blue_sched_data *q = qdisc_priv(sch);
@@ -161,7 +99,7 @@ static void blue_reset(struct Qdisc *sch)
 	sch->q.qlen = 0;
 	blue_restart(&q->vars);
 }
-
+//So far i don't see the point of changing this.
 static void blue_destroy(struct Qdisc *sch)
 {
 	struct blue_sched_data *q = qdisc_priv(sch);
@@ -185,64 +123,15 @@ static int blue_change(struct Qdisc *sch, struct nlattr *opt)
 	int err;
 	u32 max_P;
 
-	if (opt == NULL)
-		return -EINVAL;
-
-	err = nla_parse_nested(tb, TCA_BLUE_MAX, opt, blue_policy);
-	if (err < 0)
-		return err;
-
-	if (tb[TCA_BLUE_PARMS] == NULL ||
-	    tb[TCA_BLUE_STAB] == NULL)
-		return -EINVAL;
-
-	max_P = tb[TCA_BLUE_MAX_P] ? nla_get_u32(tb[TCA_BLUE_MAX_P]) : 0;
-
-	ctl = nla_data(tb[TCA_BLUE_PARMS]);
-
-	if (ctl->limit > 0) {
-		child = fifo_create_dflt(sch, &bfifo_qdisc_ops, ctl->limit);
-		if (IS_ERR(child))
-			return PTR_ERR(child);
-	}
-
-	sch_tree_lock(sch);
-	q->flags = ctl->flags;
-	q->limit = ctl->limit;
-	if (child) {
-		qdisc_tree_decrease_qlen(q->qdisc, q->qdisc->q.qlen);
-		qdisc_destroy(q->qdisc);
-		q->qdisc = child;
-	}
-
-	blue_set_parms(&q->parms,
-		      ctl->qth_min, ctl->qth_max, ctl->Wlog,
-		      ctl->Plog, ctl->Scell_log,
-		      nla_data(tb[TCA_BLUE_STAB]),
-		      max_P);
-	blue_set_vars(&q->vars);
-
-	del_timer(&q->adapt_timer);
-	if (ctl->flags & TC_BLUE_ADAPTATIVE)
-		mod_timer(&q->adapt_timer, jiffies + HZ/2);
-
-	if (!q->qdisc->q.qlen)
-		blue_start_of_idle_period(&q->vars);
-
-	sch_tree_unlock(sch);
-	return 0;
+	//need to implement blue change, this is pretty complicated.
 }
-
+//Not sure how this worked in blue, 
 static inline void blue_adaptative_timer(unsigned long arg)
 {
 	struct Qdisc *sch = (struct Qdisc *)arg;
 	struct blue_sched_data *q = qdisc_priv(sch);
 	spinlock_t *root_lock = qdisc_lock(qdisc_root_sleeping(sch));
-
-	spin_lock(root_lock);
-	blue_adaptative_algo(&q->parms, &q->vars);
-	mod_timer(&q->adapt_timer, jiffies + HZ/2);
-	spin_unlock(root_lock);
+	// need to implement this, or may be we don't need this function.
 }
 
 static int blue_init(struct Qdisc *sch, struct nlattr *opt)
@@ -253,7 +142,7 @@ static int blue_init(struct Qdisc *sch, struct nlattr *opt)
 	setup_timer(&q->adapt_timer, blue_adaptative_timer, (unsigned long)sch);
 	return blue_change(sch, opt);
 }
-
+// We should be able to use this function, or may be we need to change something.
 static int blue_dump(struct Qdisc *sch, struct sk_buff *skb)
 {
 	struct blue_sched_data *q = qdisc_priv(sch);
@@ -294,7 +183,7 @@ static int blue_dump_stats(struct Qdisc *sch, struct gnet_dump *d)
 
 	return gnet_stats_copy_app(d, &st, sizeof(st));
 }
-
+//We should be able to use this.
 static int blue_dump_class(struct Qdisc *sch, unsigned long cl,
 			  struct sk_buff *skb, struct tcmsg *tcm)
 {
@@ -305,38 +194,29 @@ static int blue_dump_class(struct Qdisc *sch, unsigned long cl,
 	return 0;
 }
 
+
 static int blue_graft(struct Qdisc *sch, unsigned long arg, struct Qdisc *new,
 		     struct Qdisc **old)
 {
 	struct blue_sched_data *q = qdisc_priv(sch);
-
-	if (new == NULL)
-		new = &noop_qdisc;
-
-	sch_tree_lock(sch);
-	*old = q->qdisc;
-	q->qdisc = new;
-	qdisc_tree_decrease_qlen(*old, (*old)->q.qlen);
-	qdisc_reset(*old);
-	sch_tree_unlock(sch);
-	return 0;
+	// need to implement this
 }
-
+//no need to change.
 static struct Qdisc *blue_leaf(struct Qdisc *sch, unsigned long arg)
 {
 	struct blue_sched_data *q = qdisc_priv(sch);
 	return q->qdisc;
 }
-
+// no need to change
 static unsigned long blue_get(struct Qdisc *sch, u32 classid)
 {
 	return 1;
 }
-
+//no need to change
 static void blue_put(struct Qdisc *sch, unsigned long arg)
 {
 }
-
+//I don't quite understand how this works at this moment, but i don't think we need to change it.
 static void blue_walk(struct Qdisc *sch, struct qdisc_walker *walker)
 {
 	if (!walker->stop) {
