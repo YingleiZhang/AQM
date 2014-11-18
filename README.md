@@ -12,4 +12,5 @@ The blue algorithm was implemented from scrach.
 Instruction:
 Download the file and put them in the same folder.
 Run "make", this will generate the kernel modules.
-Run "insmod  sch_red.ko" to insert the kernel mod
+Run "insmod  sch_red.ko" to insert the kernel mod.
+Use tc command to select the kernel mod just inserted.
