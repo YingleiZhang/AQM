@@ -20,7 +20,7 @@
 #include <linux/skbuff.h>
 #include <net/pkt_sched.h>
 #include <net/inet_ecn.h>
-#include <net/red.h>
+#include "red.h"
 
 
 /*	Parameters, settable by user:
