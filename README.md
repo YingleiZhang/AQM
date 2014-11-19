@@ -5,9 +5,9 @@ There are 3 classes, and we have
 
 Class0    DSCP = 0x32     DSCP_factor = 0.5        Best Performance.
 
-Class1    DSCP = 0x46     DSCP_factor = 0.5        Middle in the road
+Class1    DSCP = 0x46     DSCP_factor = 0.7        Middle in the road
 
-Class2    DSCP = 0x00     DSCP_factor = 0.5        Best 
+Class2    DSCP = 0x00     DSCP_factor = 0.9        Best effort 
 
 The modification on red was based on the original code. 
 The blue algorithm was implemented from scrach. 
