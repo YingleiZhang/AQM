@@ -363,7 +363,7 @@ static const struct Qdisc_class_ops red_class_ops = {
 	.dump		=	red_dump_class,
 };
 
-static struct Qdisc_ops red_qdisc_ops __read_mostly = {
+static struct Qdisc_ops csc573_red_qdisc_ops __read_mostly = {
 	.id		=	"red",
 	.priv_size	=	sizeof(struct red_sched_data),
 	.cl_ops		=	&red_class_ops,
@@ -380,14 +380,14 @@ static struct Qdisc_ops red_qdisc_ops __read_mostly = {
 	.owner		=	THIS_MODULE,
 };
 
-static int __init red_module_init(void)
+static int __init csc573_red_module_init(void)
 {
-	return register_qdisc(&red_qdisc_ops);
+	return register_qdisc(&csc573_red_qdisc_ops);
 }
 
-static void __exit red_module_exit(void)
+static void __exit csc573_red_module_exit(void)
 {
-	unregister_qdisc(&red_qdisc_ops);
+	unregister_qdisc(&csc573_red_qdisc_ops);
 }
 
 module_init(red_module_init)
