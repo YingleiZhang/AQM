@@ -56,7 +56,7 @@ static inline int red_use_harddrop(struct red_sched_data *q)
 	return q->flags & TC_RED_HARDDROP;
 }
 
-static int red_enqueue(struct sk_buff *skb, struct Qdisc *sch)
+static int red_csc573_enqueue(struct sk_buff *skb, struct Qdisc *sch)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct Qdisc *child = q->qdisc;
@@ -114,7 +114,7 @@ congestion_drop:
 	return NET_XMIT_CN;
 }
 
-static struct sk_buff *red_dequeue(struct Qdisc *sch)
+static struct sk_buff *red_csc573_dequeue(struct Qdisc *sch)
 {
 	struct sk_buff *skb;
 	struct red_sched_data *q = qdisc_priv(sch);
@@ -131,7 +131,7 @@ static struct sk_buff *red_dequeue(struct Qdisc *sch)
 	return skb;
 }
 
-static struct sk_buff *red_peek(struct Qdisc *sch)
+static struct sk_buff *red_csc573_peek(struct Qdisc *sch)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct Qdisc *child = q->qdisc;
@@ -139,7 +139,7 @@ static struct sk_buff *red_peek(struct Qdisc *sch)
 	return child->ops->peek(child);
 }
 
-static unsigned int red_drop(struct Qdisc *sch)
+static unsigned int red_csc573_drop(struct Qdisc *sch)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct Qdisc *child = q->qdisc;
@@ -158,7 +158,7 @@ static unsigned int red_drop(struct Qdisc *sch)
 	return 0;
 }
 
-static void red_reset(struct Qdisc *sch)
+static void red_csc573_reset(struct Qdisc *sch)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 
@@ -167,7 +167,7 @@ static void red_reset(struct Qdisc *sch)
 	red_restart(&q->vars);
 }
 
-static void red_destroy(struct Qdisc *sch)
+static void red_csc573_destroy(struct Qdisc *sch)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 
@@ -181,7 +181,7 @@ static const struct nla_policy red_policy[TCA_RED_MAX + 1] = {
 	[TCA_RED_MAX_P] = { .type = NLA_U32 },
 };
 
-static int red_change(struct Qdisc *sch, struct nlattr *opt)
+static int red_csc573_change(struct Qdisc *sch, struct nlattr *opt)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct nlattr *tb[TCA_RED_MAX + 1];
@@ -238,7 +238,7 @@ static int red_change(struct Qdisc *sch, struct nlattr *opt)
 	return 0;
 }
 
-static inline void red_adaptative_timer(unsigned long arg)
+static inline void red_csc573_adaptative_timer(unsigned long arg)
 {
 	struct Qdisc *sch = (struct Qdisc *)arg;
 	struct red_sched_data *q = qdisc_priv(sch);
@@ -250,7 +250,7 @@ static inline void red_adaptative_timer(unsigned long arg)
 	spin_unlock(root_lock);
 }
 
-static int red_init(struct Qdisc *sch, struct nlattr *opt)
+static int red_csc573_init(struct Qdisc *sch, struct nlattr *opt)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 
@@ -259,7 +259,7 @@ static int red_init(struct Qdisc *sch, struct nlattr *opt)
 	return red_change(sch, opt);
 }
 
-static int red_dump(struct Qdisc *sch, struct sk_buff *skb)
+static int red_csc573_dump(struct Qdisc *sch, struct sk_buff *skb)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct nlattr *opts = NULL;
@@ -287,7 +287,7 @@ nla_put_failure:
 	return -EMSGSIZE;
 }
 
-static int red_dump_stats(struct Qdisc *sch, struct gnet_dump *d)
+static int red_csc573_dump_stats(struct Qdisc *sch, struct gnet_dump *d)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	struct tc_red_xstats st = {
@@ -300,7 +300,7 @@ static int red_dump_stats(struct Qdisc *sch, struct gnet_dump *d)
 	return gnet_stats_copy_app(d, &st, sizeof(st));
 }
 
-static int red_dump_class(struct Qdisc *sch, unsigned long cl,
+static int red_csc573_dump_class(struct Qdisc *sch, unsigned long cl,
 			  struct sk_buff *skb, struct tcmsg *tcm)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
@@ -310,7 +310,7 @@ static int red_dump_class(struct Qdisc *sch, unsigned long cl,
 	return 0;
 }
 
-static int red_graft(struct Qdisc *sch, unsigned long arg, struct Qdisc *new,
+static int red_csc573_graft(struct Qdisc *sch, unsigned long arg, struct Qdisc *new,
 		     struct Qdisc **old)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
@@ -333,16 +333,16 @@ static struct Qdisc *red_leaf(struct Qdisc *sch, unsigned long arg)
 	return q->qdisc;
 }
 
-static unsigned long red_get(struct Qdisc *sch, u32 classid)
+static unsigned long red_csc573_get(struct Qdisc *sch, u32 classid)
 {
 	return 1;
 }
 
-static void red_put(struct Qdisc *sch, unsigned long arg)
+static void red_csc573_put(struct Qdisc *sch, unsigned long arg)
 {
 }
 
-static void red_walk(struct Qdisc *sch, struct qdisc_walker *walker)
+static void red_csc573_walk(struct Qdisc *sch, struct qdisc_walker *walker)
 {
 	if (!walker->stop) {
 		if (walker->count >= walker->skip)
@@ -354,40 +354,40 @@ static void red_walk(struct Qdisc *sch, struct qdisc_walker *walker)
 	}
 }
 
-static const struct Qdisc_class_ops red_class_ops = {
-	.graft		=	red_graft,
-	.leaf		=	red_leaf,
-	.get		=	red_get,
-	.put		=	red_put,
-	.walk		=	red_walk,
-	.dump		=	red_dump_class,
+static const struct Qdisc_class_ops red_csc573_class_ops = {
+	.graft		=	red_csc573_graft,
+	.leaf		=	red_csc573_leaf,
+	.get		=	red_csc573_get,
+	.put		=	red_csc573_put,
+	.walk		=	red_csc573_walk,
+	.dump		=	red_csc573_dump_class,
 };
 
-static struct Qdisc_ops red_qdisc_ops __read_mostly = {
+static struct Qdisc_ops red_csc573_qdisc_ops __read_mostly = {
 	.id		=	"red_csc573",
 	.priv_size	=	sizeof(struct red_sched_data),
 	.cl_ops		=	&red_class_ops,
-	.enqueue	=	red_enqueue,
-	.dequeue	=	red_dequeue,
-	.peek		=	red_peek,
-	.drop		=	red_drop,
-	.init		=	red_init,
-	.reset		=	red_reset,
-	.destroy	=	red_destroy,
-	.change		=	red_change,
-	.dump		=	red_dump,
-	.dump_stats	=	red_dump_stats,
+	.enqueue	=	red_csc573_enqueue,
+	.dequeue	=	red_csc573_dequeue,
+	.peek		=	red_csc573_peek,
+	.drop		=	red_csc573_drop,
+	.init		=	red_csc573_init,
+	.reset		=	red_csc573_reset,
+	.destroy	=	red_csc573_destroy,
+	.change		=	red_csc573_change,
+	.dump		=	red_csc573_dump,
+	.dump_stats	=	red_csc573_dump_stats,
 	.owner		=	THIS_MODULE,
 };
 
 static int __init red_module_init(void)
 {
-	return register_qdisc(&red_qdisc_ops);
+	return register_qdisc(&red_csc573_qdisc_ops);
 }
 
 static void __exit red_module_exit(void)
 {
-	unregister_qdisc(&red_qdisc_ops);
+	unregister_qdisc(&red_csc573_qdisc_ops);
 }
 
 module_init(red_module_init)
