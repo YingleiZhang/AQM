@@ -255,8 +255,8 @@ static int red_csc573_init(struct Qdisc *sch, struct nlattr *opt)
 	struct red_sched_data *q = qdisc_priv(sch);
 
 	q->qdisc = &noop_qdisc;
-	setup_timer(&q->adapt_timer, red_adaptative_timer, (unsigned long)sch);
-	return red_change(sch, opt);
+	setup_timer(&q->adapt_timer, red_csc573_adaptative_timer, (unsigned long)sch);
+	return red_csc573_change(sch, opt);
 }
 
 static int red_csc573_dump(struct Qdisc *sch, struct sk_buff *skb)
