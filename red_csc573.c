@@ -20,7 +20,7 @@
 #include <linux/skbuff.h>
 #include <net/pkt_sched.h>
 #include <net/inet_ecn.h>
-#include "red.h"
+#include "red_csc573.h"
 
 
 /*	Parameters, settable by user:
@@ -364,7 +364,7 @@ static const struct Qdisc_class_ops red_class_ops = {
 };
 
 static struct Qdisc_ops red_qdisc_ops __read_mostly = {
-	.id		=	"csc573_red",
+	.id		=	"red_csc573",
 	.priv_size	=	sizeof(struct red_sched_data),
 	.cl_ops		=	&red_class_ops,
 	.enqueue	=	red_enqueue,
