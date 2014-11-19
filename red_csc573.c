@@ -327,7 +327,7 @@ static int red_csc573_graft(struct Qdisc *sch, unsigned long arg, struct Qdisc *
 	return 0;
 }
 
-static struct Qdisc *red_leaf(struct Qdisc *sch, unsigned long arg)
+static struct Qdisc *red_csc573_leaf(struct Qdisc *sch, unsigned long arg)
 {
 	struct red_sched_data *q = qdisc_priv(sch);
 	return q->qdisc;
